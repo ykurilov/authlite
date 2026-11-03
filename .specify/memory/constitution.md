@@ -1,50 +1,102 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# AuthLite Constitution
+
+AuthLite — переиспользуемая библиотека простой авторизации (регистрация, вход, выход,
+сброс пароля по почте) для приложений Юрия. Ставят её ИИ-агенты.
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Лёгкость
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+- AuthLite — тонкая обёртка над Better Auth. Своего кода — ровно столько, сколько нужно
+  для простого подключения.
+- Новая зависимость добавляется только если без неё задачу не решить разумно; причина
+  записывается в плане.
+- Никаких отдельных серверов и фоновых процессов: библиотека работает внутри приложения.
+- Телеметрия Better Auth выключается явно в настройках по умолчанию.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+Обоснование: библиотека должна подходить для самого слабого сервера и не тянуть лишнее.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. Безопасность не изобретаем
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+- Хранение паролей, сессии и токены сброса — только средствами Better Auth. Своя
+  криптография запрещена.
+- Пароль никогда не отправляется по почте и не попадает в журналы. Для сброса —
+  только одноразовая ссылка с ограниченным сроком действия.
+- Ответы на «забыл пароль» не раскрывают, зарегистрирован ли такой адрес.
+- Значения по умолчанию — безопасные; ослабление требует явной настройки.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Обоснование: ошибки в авторизации тихие и дорогие, а проверенное решение уже есть.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### III. Подключение агентом за минуты
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- Подключение в приложение — одна функция настройки с разумными значениями по умолчанию.
+- В комплекте готовые экраны входа, регистрации и сброса пароля.
+- К библиотеке прилагается скилл для агентов с пошаговой установкой и проверкой.
+- Каждая настройка, которую агенту нужно задать, описана в скилле; скрытых шагов нет.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+Обоснование: главный пользователь библиотеки — агент, которому нужно быстро и без ошибок.
+
+### IV. SQLite одним файлом
+
+- Хранилище пользователей и сессий — один файл SQLite рядом с приложением.
+- Таблицы создаются и обновляются автоматически при запуске, без ручных команд.
+
+Обоснование: ноль инфраструктуры — ничего не нужно ставить и администрировать.
+
+### V. Почта без своего SMTP
+
+- Письма отправляются через HTTP API почтового сервиса; по умолчанию — Resend.
+- Отправка спрятана за тонким интерфейсом «отправить письмо»; другой провайдер
+  подключается реализацией этого интерфейса без правок остального кода.
+- Для разработки есть режим без отправки: ссылка сброса выводится в журнал сервера.
+
+Обоснование: бесплатно, без своего почтового сервера, с возможностью сменить сервис.
+
+### VI. Модульность и понятный код
+
+- Глубокие модули с тонкими интерфейсами: снаружи — мало функций, внутри — вся сложность.
+- Названия файлов, функций и переменных — предметные; код описывает себя сам.
+- Поддержка конкретного фреймворка (Next.js, Hono) — отдельный модуль-переходник
+  поверх общего ядра.
+
+Обоснование: агенту и человеку проще понять и безопасно изменить небольшой понятный интерфейс.
+
+### VII. Тесты по делу
+
+- Новая возможность — по TDD: сначала тесты, убедиться, что они красные по нужной
+  причине, затем код, затем все тесты зелёные, включая старые.
+- Мелкие правки — без новых тестов, проверяются затронутые тесты.
+- Тесты не подгоняются под код.
+- Браузерные тесты — только для сквозных сценариев (регистрация, вход, сброс); сроки
+  и паузы проверяются обычными тестами с подменёнными часами.
+- Полный прогон всех тестов — один раз перед выпуском версии.
+
+Обоснование: уверенность в главном без долгих и хрупких прогонов.
+
+## Технические рамки
+
+- Язык — TypeScript, менеджер пакетов — pnpm; один файл-замок, всегда в git.
+- Поддерживаемые приложения: Next.js и Hono + Vite.
+- Секреты (ключ почтового сервиса, секрет сессий) — только в переменных окружения,
+  никогда в коде, документации и коммитах. Если обязательный секрет не задан —
+  понятная ошибка при запуске.
+- Документация и скилл — на русском языке.
+
+## Порядок разработки
+
+- Новая возможность или правка нескольких модулей — полный цикл Spec Kit:
+  спецификация → план → задачи → реализация.
+- Небольшая доработка — короткий план и тесты.
+- Этапы — вертикальные срезы; коммит после каждого законченного этапа.
+- Перед выпуском: полный прогон тестов и проверка скилла на чистом приложении.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- Эта конституция главнее других правил проекта; планы и задачи проверяются на
+  соответствие ей.
+- Изменения — только по согласованию с Юрием, с записью версии и даты.
+- Версии: MAJOR — удаление или переосмысление принципа; MINOR — новый принцип или
+  раздел; PATCH — уточнения формулировок.
+- Отступление от принципа допускается только с письменным обоснованием в плане.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-11-03 | **Last Amended**: 2026-11-03
