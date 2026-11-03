@@ -37,15 +37,15 @@ description: "Задачи реализации AuthLite v1"
 
 **Goal**: приложение знает пользователя и закрывает страницы/запросы. **Independent Test**: защищённый запрос без входа → 401, после входа → данные; страница без входа → редирект с `next`.
 
-- [ ] T014 [P] [US2] Тесты `packages/authlite/tests/current-user.test.ts`: `getCurrentUser` → `{id,email,name}` / `null`; после выхода в другой вкладке → `null`
-- [ ] T015 [P] [US2] Тесты `packages/authlite/tests/hono-adapter.test.ts`: `mountAuthLite`, `requireUser` (401 `{"error":"unauthorized"}` / пользователь в `c.get("user")`), `requirePage` (302 на `/login?next=<путь>`)
-- [ ] T016 [P] [US2] Тесты `packages/authlite/tests/next-adapter.test.ts`: `handlers.GET/POST` проксируют, `withUser` 401/200, `requireUser` вызывает `redirect("/login?next=…")` (мок `next/navigation`, `next/headers`)
-- [ ] T017 [US2] Реализовать `getCurrentUser` в `packages/authlite/src/core/create-auth-lite.ts`
-- [ ] T018 [P] [US2] Реализовать `packages/authlite/src/hono/index.ts`
-- [ ] T019 [P] [US2] Реализовать `packages/authlite/src/next/index.ts`
-- [ ] T020 [P] [US2] Реализовать `useCurrentUser` и `AuthGuard` в `packages/authlite/src/react/current-user.tsx`
-- [ ] T021 [US2] Пример `examples/next-app` (Next.js 16): `/api/auth/[...all]`, `/login`, `/signup`, `/forgot-password`, `/reset-password`, защищённая `/dashboard`, защищённый `/api/notes`, `lib/auth.ts`
-- [ ] T022 [US2] Пример `examples/hono-vite` (Hono сервер + Vite React): те же экраны и адреса, `requireUser` на `/api/notes`, `AuthGuard` на `/dashboard`, в рабочем режиме Hono отдаёт сборку и `requirePage` на `/dashboard`
+- [X] T014 [P] [US2] Тесты `packages/authlite/tests/current-user.test.ts`: `getCurrentUser` → `{id,email,name}` / `null`; после выхода в другой вкладке → `null`
+- [X] T015 [P] [US2] Тесты `packages/authlite/tests/hono-adapter.test.ts`: `mountAuthLite`, `requireUser` (401 `{"error":"unauthorized"}` / пользователь в `c.get("user")`), `requirePage` (302 на `/login?next=<путь>`)
+- [X] T016 [P] [US2] Тесты `packages/authlite/tests/next-adapter.test.ts`: `handlers.GET/POST` проксируют, `withUser` 401/200, `requireUser` вызывает `redirect("/login?next=…")` (мок `next/navigation`, `next/headers`)
+- [X] T017 [US2] Реализовать `getCurrentUser` в `packages/authlite/src/core/create-auth-lite.ts`
+- [X] T018 [P] [US2] Реализовать `packages/authlite/src/hono/index.ts`
+- [X] T019 [P] [US2] Реализовать `packages/authlite/src/next/index.ts`
+- [X] T020 [P] [US2] Реализовать `useCurrentUser` и `AuthGuard` в `packages/authlite/src/react/current-user.tsx`
+- [X] T021 [US2] Пример `examples/next-app` (Next.js 16): `/api/auth/[...all]`, `/login`, `/signup`, `/forgot-password`, `/reset-password`, защищённая `/dashboard`, защищённый `/api/notes`, `lib/auth.ts`
+- [X] T022 [US2] Пример `examples/hono-vite` (Hono сервер + Vite React): те же экраны и адреса, `requireUser` на `/api/notes`, `AuthGuard` на `/dashboard`, в рабочем режиме Hono отдаёт сборку и `requirePage` на `/dashboard`
 
 ## Phase 5: User Story 3 — Сброс пароля (P2)
 

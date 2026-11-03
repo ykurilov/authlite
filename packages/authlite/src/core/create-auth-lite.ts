@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { getMigrations } from "better-auth/db/migration";
 import { openDatabase } from "./database.js";
@@ -20,59 +20,83 @@ export interface AuthLite {
   handler(request: Request): Promise<Response>;
   /** Текущий пользователь по заголовкам запроса (cookie) или null. */
   getCurrentUser(headers: Headers): Promise<AuthLiteUser | null>;
-  /** Создаёт и обновляет таблицы. Вызывается автоматически при первом запросе. */
+  /**
+   * Проверяет настройки, открывает базу, создаёт и обновляет таблицы.
+   * Вызывается сама при первом запросе; вызовите при старте сервера, чтобы ошибки настройки
+   * останавливали запуск сразу.
+   */
   ready(): Promise<void>;
-  /** Запасной выход к Better Auth для редких задач. */
-  betterAuth: ReturnType<typeof createBetterAuth>;
-  settings: Pick<AuthLiteSettings, "baseURL" | "routes" | "devEmailMode" | "appName">;
+  /** Запасной выход к Better Auth для редких задач. Доступен после ready(). */
+  readonly betterAuth: BetterAuthInstance;
+  /** Итоговые настройки. Доступны после ready(). */
+  readonly settings: Pick<AuthLiteSettings, "baseURL" | "routes" | "devEmailMode" | "appName">;
 }
 
-export function createAuthLite(options: AuthLiteOptions = {}): AuthLite {
-  const settings = resolveSettings(options);
-  const auth = createBetterAuth(settings);
+type BetterAuthInstance = ReturnType<typeof createBetterAuth>;
 
-  if (settings.devEmailMode) {
-    console.warn(
-      "[AuthLite] RESEND_API_KEY не задан — режим разработки: письма не отправляются, ссылки сброса пароля пишутся в журнал сервера.",
-    );
+const DEV_MODE_WARNING =
+  "[AuthLite] RESEND_API_KEY не задан — режим разработки: письма не отправляются, ссылки сброса пароля пишутся в журнал сервера.";
+
+export function createAuthLite(options: AuthLiteOptions = {}): AuthLite {
+  // Создание откладывается до ready(): импорт модуля при сборке приложения (next build)
+  // не требует секретов и не трогает файл базы.
+  let settings: AuthLiteSettings | undefined;
+  let auth: BetterAuthInstance | undefined;
+  let starting: Promise<void> | undefined;
+
+  const ready = () => {
+    starting ??= start().catch((error: unknown) => {
+      starting = undefined;
+      throw error;
+    });
+    return starting;
+  };
+
+  async function start() {
+    const resolved = resolveSettings(options);
+    const betterAuthOptions = buildBetterAuthOptions(resolved);
+    // Таблицы создаются до запуска Better Auth, иначе он сообщает о несовпадении схемы.
+    const { runMigrations } = await getMigrations(betterAuthOptions);
+    await runMigrations();
+    settings = resolved;
+    auth = createBetterAuth(betterAuthOptions);
+    if (resolved.devEmailMode) warnOncePerProcess(DEV_MODE_WARNING);
   }
 
-  let migration: Promise<void> | undefined;
-  const ready = () => {
-    migration ??= getMigrations(auth.options)
-      .then(({ runMigrations }) => runMigrations())
-      .catch((error: unknown) => {
-        migration = undefined;
-        throw error;
-      });
-    return migration;
+  const started = () => {
+    if (!auth || !settings) throw new Error("[AuthLite] Сначала дождитесь await authLite.ready()");
+    return { auth, settings };
   };
 
   return {
     async handler(request) {
       await ready();
-      return auth.handler(request);
+      return started().auth.handler(request);
     },
     async getCurrentUser(headers) {
       await ready();
-      const result = await auth.api.getSession({ headers });
+      const result = await started().auth.api.getSession({ headers });
       if (!result) return null;
       const { id, email, name } = result.user;
       return { id, email, name: name || null };
     },
     ready,
-    betterAuth: auth,
-    settings: {
-      baseURL: settings.baseURL,
-      routes: settings.routes,
-      devEmailMode: settings.devEmailMode,
-      appName: settings.appName,
+    get betterAuth() {
+      return started().auth;
+    },
+    get settings() {
+      const { baseURL, routes, devEmailMode, appName } = started().settings;
+      return { baseURL, routes, devEmailMode, appName };
     },
   };
 }
 
-function createBetterAuth(settings: AuthLiteSettings) {
-  return betterAuth({
+function createBetterAuth(options: ReturnType<typeof buildBetterAuthOptions>) {
+  return betterAuth(options);
+}
+
+function buildBetterAuthOptions(settings: AuthLiteSettings) {
+  return {
     appName: settings.appName,
     secret: settings.secret,
     baseURL: settings.baseURL,
@@ -98,7 +122,16 @@ function createBetterAuth(settings: AuthLiteSettings) {
         return { context: { body: { ...ctx.body, email: normalizeEmail(email) } } };
       }),
     },
-  });
+  } satisfies BetterAuthOptions;
+}
+
+/** Next.js загружает модуль несколько раз (разные части приложения) — предупреждаем один раз. */
+function warnOncePerProcess(message: string) {
+  const store = globalThis as { __authliteWarnings?: Set<string> };
+  store.__authliteWarnings ??= new Set();
+  if (store.__authliteWarnings.has(message)) return;
+  store.__authliteWarnings.add(message);
+  console.warn(message);
 }
 
 export function normalizeEmail(email: string): string {

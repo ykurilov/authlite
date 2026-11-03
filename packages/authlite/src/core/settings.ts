@@ -63,7 +63,7 @@ export function resolveSettings(options: AuthLiteOptions = {}, env: Env = proces
   return {
     secret,
     baseURL,
-    databasePath: resolve(options.databasePath ?? env.AUTHLITE_DB_PATH ?? "./data/authlite.sqlite"),
+    databasePath: resolve(/* turbopackIgnore: true */ options.databasePath ?? env.AUTHLITE_DB_PATH ?? "./data/authlite.sqlite"),
     appName: options.appName ?? env.AUTHLITE_APP_NAME ?? "Приложение",
     routes: {
       login: options.routes?.login ?? "/login",

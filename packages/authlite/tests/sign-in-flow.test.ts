@@ -88,8 +88,9 @@ describe("регистрация, вход и выход", () => {
     expect(sessionCookie(response)).toContain("session_token=");
   });
 
-  it("телеметрия выключена явно, сессия 30 дней с продлением раз в сутки", () => {
+  it("телеметрия выключена явно, сессия 30 дней с продлением раз в сутки", async () => {
     const app = createTestApp();
+    await app.authLite.ready();
     const options = app.authLite.betterAuth.options;
     expect(options.telemetry?.enabled).toBe(false);
     expect(options.session?.expiresIn).toBe(30 * 24 * 60 * 60);
