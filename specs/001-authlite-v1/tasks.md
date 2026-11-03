@@ -68,8 +68,8 @@ description: "Задачи реализации AuthLite v1"
 
 **Goal**: ограничение частоты. **Independent Test**: 6-я попытка входа за минуту → 429; 4-й запрос сброса на email за 10 минут → письмо не уходит.
 
-- [ ] T030 [US5] Тесты `packages/authlite/tests/rate-limit.test.ts`: 6-я попытка входа за 60 с с одного адреса → 429; 4-й запрос сброса за 600 с с одного адреса → без письма; 4-й запрос на один email с разных адресов → без письма, ответ нейтральный; через 10 минут (подменённые часы) снова можно
-- [ ] T031 [US5] Реализовать `rateLimit` (enabled, memory, customRules) в `packages/authlite/src/core/create-auth-lite.ts` и `packages/authlite/src/core/reset-request-limiter.ts`; экран входа показывает «Слишком много попыток, попробуйте позже» на 429
+- [X] T030 [US5] Тесты `packages/authlite/tests/rate-limit.test.ts`: 6-я попытка входа за 60 с с одного адреса → 429; 4-й запрос сброса за 600 с с одного адреса → без письма; 4-й запрос на один email с разных адресов → без письма, ответ нейтральный; через 10 минут (подменённые часы) снова можно
+- [X] T031 [US5] Реализовать `rateLimit` (enabled, memory, customRules) в `packages/authlite/src/core/create-auth-lite.ts` и `packages/authlite/src/core/reset-request-limiter.ts`; экран входа показывает «Слишком много попыток, попробуйте позже» на 429
 
 ## Phase 8: Polish
 

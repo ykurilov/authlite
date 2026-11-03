@@ -7,10 +7,17 @@ import type { EmailSender } from "./email/email-sender.js";
 import { createResendSender } from "./email/resend-sender.js";
 import { buildResetPasswordEmail } from "./email/reset-password-email.js";
 import { revokeOlderResetLinks } from "./reset-links.js";
+import { createResetRequestLimiter } from "./reset-request-limiter.js";
 import { resolveSettings, type AuthLiteOptions, type AuthLiteSettings } from "./settings.js";
 
 const DAY_IN_SECONDS = 24 * 60 * 60;
 const RESET_LINK_LIFETIME_SECONDS = 60 * 60;
+const RESET_REQUESTS_PER_EMAIL = { max: 3, windowMs: 10 * 60 * 1000 };
+/** Ответ Better Auth на запрос сброса: одинаковый для любых адресов. */
+const NEUTRAL_RESET_RESPONSE = {
+  status: true,
+  message: "If this email exists in our system, check your email for the reset link",
+};
 
 /** Пути Better Auth, в теле которых приходит email пользователя. */
 const EMAIL_PATHS = new Set(["/sign-up/email", "/sign-in/email", "/request-password-reset"]);
@@ -104,6 +111,7 @@ function createBetterAuth(options: ReturnType<typeof buildBetterAuthOptions>) {
 function buildBetterAuthOptions(settings: AuthLiteSettings) {
   const database = openDatabase(settings.databasePath);
   const emailSender = createEmailSender(settings);
+  const resetRequestsPerEmail = createResetRequestLimiter(RESET_REQUESTS_PER_EMAIL);
   return {
     appName: settings.appName,
     secret: settings.secret,
@@ -134,6 +142,18 @@ function buildBetterAuthOptions(settings: AuthLiteSettings) {
       expiresIn: 30 * DAY_IN_SECONDS,
       updateAge: DAY_IN_SECONDS,
     },
+    // Ограничение по адресу подключения (берётся из X-Forwarded-For, его задаёт nginx).
+    // Включено всегда, а не только в рабочем режиме, как по умолчанию в Better Auth.
+    rateLimit: {
+      enabled: true,
+      storage: "memory",
+      window: 60,
+      max: 100,
+      customRules: {
+        "/sign-in/email": { window: 60, max: 5 },
+        "/request-password-reset": { window: 10 * 60, max: 3 },
+      },
+    },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
         if (!EMAIL_PATHS.has(ctx.path)) return;
@@ -141,7 +161,11 @@ function buildBetterAuthOptions(settings: AuthLiteSettings) {
         if (typeof body.email !== "string") return;
         const normalized: Record<string, unknown> = { ...body, email: normalizeEmail(body.email) };
         // Без адреса возврата ссылка из письма вела бы в никуда — ведём на экран нового пароля.
-        if (ctx.path === "/request-password-reset" && !body.redirectTo) normalized.redirectTo = settings.routes.resetPassword;
+        if (ctx.path === "/request-password-reset") {
+          if (!body.redirectTo) normalized.redirectTo = settings.routes.resetPassword;
+          // Лимит на сам ящик: письмо не уходит, а ответ тот же, чтобы не выдать, что адрес есть.
+          if (!resetRequestsPerEmail.tryAcquire(normalized.email as string)) return ctx.json(NEUTRAL_RESET_RESPONSE);
+        }
         return { context: { body: normalized } };
       }),
     },
