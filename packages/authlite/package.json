@@ -1,0 +1,46 @@
+{
+  "name": "@ykurilov/authlite",
+  "version": "0.1.0",
+  "description": "Простая авторизация (email + пароль, сброс по почте) поверх Better Auth для Next.js и Hono + Vite",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22.13" },
+  "files": ["dist"],
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./next": { "types": "./dist/next/index.d.ts", "default": "./dist/next/index.js" },
+    "./hono": { "types": "./dist/hono/index.d.ts", "default": "./dist/hono/index.js" },
+    "./react": { "types": "./dist/react/index.d.ts", "default": "./dist/react/index.js" },
+    "./styles.css": "./dist/react/styles.css"
+  },
+  "sideEffects": ["*.css"],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && cp src/react/styles.css dist/react/styles.css",
+    "prepare": "pnpm run build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "better-auth": "1.7.15"
+  },
+  "peerDependencies": {
+    "hono": ">=4",
+    "next": ">=15",
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "hono": { "optional": true },
+    "next": { "optional": true },
+    "react": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "@types/react": "19.3.0",
+    "hono": "4.13.16",
+    "next": "16.4.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}

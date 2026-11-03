@@ -11,18 +11,18 @@ description: "Задачи реализации AuthLite v1"
 
 ## Phase 1: Setup
 
-- [ ] T001 Создать корень монорепозитория: `package.json` (скрипты build/test/e2e), `pnpm-workspace.yaml` (`packages/*`, `examples/*`), `.gitignore`, `.nvmrc` (22), `tsconfig.base.json`
-- [ ] T002 Создать пакет `packages/authlite/package.json` (`@ykurilov/authlite`, exports `.`/`./next`/`./hono`/`./react`/`./styles.css`, зависимость `better-auth@1.7.15`, peer react/next/hono необязательные, скрипты build/test/prepare), `packages/authlite/tsconfig.json`, `packages/authlite/vitest.config.ts`
-- [ ] T003 Установить зависимости `pnpm install`, закоммитить `pnpm-lock.yaml`
+- [X] T001 Создать корень монорепозитория: `package.json` (скрипты build/test/e2e), `pnpm-workspace.yaml` (`packages/*`, `examples/*`), `.gitignore`, `.nvmrc` (22), `tsconfig.base.json`
+- [X] T002 Создать пакет `packages/authlite/package.json` (`@ykurilov/authlite`, exports `.`/`./next`/`./hono`/`./react`/`./styles.css`, зависимость `better-auth@1.7.15`, peer react/next/hono необязательные, скрипты build/test/prepare), `packages/authlite/tsconfig.json`, `packages/authlite/vitest.config.ts`
+- [X] T003 Установить зависимости `pnpm install`, закоммитить `pnpm-lock.yaml`
 
 ## Phase 2: Foundational
 
-- [ ] T004 [P] Тесты настроек в `packages/authlite/tests/settings.test.ts`: нет секрета → `AuthLiteConfigError` с именем `AUTHLITE_SECRET` и командой генерации; секрет < 32 символов → ошибка; нет `AUTHLITE_URL` → ошибка; без `RESEND_API_KEY` — режим разработки; с ключом без `AUTHLITE_EMAIL_FROM` → ошибка
-- [ ] T005 [P] Тесты базы в `packages/authlite/tests/database.test.ts`: файл и папка создаются; папка без права записи → `AuthLiteConfigError` с путём
-- [ ] T006 Реализовать `packages/authlite/src/core/settings.ts` и `packages/authlite/src/core/errors.ts`
-- [ ] T007 Реализовать `packages/authlite/src/core/database.ts` (`node:sqlite`, проверка записи)
-- [ ] T008 [P] Тесты почты в `packages/authlite/tests/email.test.ts`: Resend шлёт `POST https://api.resend.com/emails` с `Authorization: Bearer`, from/to/subject/html/text; ошибка HTTP → исключение; консольный отправитель пишет ссылку; письмо сброса — русский текст с названием приложения и ссылкой
-- [ ] T009 Реализовать `packages/authlite/src/core/email/{email-sender,resend-sender,console-sender,reset-password-email}.ts`
+- [X] T004 [P] Тесты настроек в `packages/authlite/tests/settings.test.ts`: нет секрета → `AuthLiteConfigError` с именем `AUTHLITE_SECRET` и командой генерации; секрет < 32 символов → ошибка; нет `AUTHLITE_URL` → ошибка; без `RESEND_API_KEY` — режим разработки; с ключом без `AUTHLITE_EMAIL_FROM` → ошибка
+- [X] T005 [P] Тесты базы в `packages/authlite/tests/database.test.ts`: файл и папка создаются; папка без права записи → `AuthLiteConfigError` с путём
+- [X] T006 Реализовать `packages/authlite/src/core/settings.ts` и `packages/authlite/src/core/errors.ts`
+- [X] T007 Реализовать `packages/authlite/src/core/database.ts` (`node:sqlite`, проверка записи)
+- [X] T008 [P] Тесты почты в `packages/authlite/tests/email.test.ts`: Resend шлёт `POST https://api.resend.com/emails` с `Authorization: Bearer`, from/to/subject/html/text; ошибка HTTP → исключение; консольный отправитель пишет ссылку; письмо сброса — русский текст с названием приложения и ссылкой
+- [X] T009 Реализовать `packages/authlite/src/core/email/{email-sender,resend-sender,console-sender,reset-password-email}.ts`
 
 ## Phase 3: User Story 1 — Регистрация, вход, выход (P1) 🎯 MVP
 
