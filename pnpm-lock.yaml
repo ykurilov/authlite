@@ -12,6 +12,46 @@ importers:
         specifier: 1.64.1
         version: 1.64.1
 
+  .skill-check-hono:
+    dependencies:
+      '@hono/node-server':
+        specifier: 2.1.6
+        version: 2.1.6(hono@4.13.16)
+      '@ykurilov/authlite':
+        specifier: file:vendor/ykurilov-authlite-0.1.0.tgz
+        version: file:.skill-check-hono/vendor/ykurilov-authlite-0.1.0.tgz(hono@4.13.16)(next@16.4.4(@playwright/test@1.64.1)(@types/node@22.20.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.1.0(@types/node@22.20.5)(vite@8.3.5(@types/node@22.20.5)))
+      hono:
+        specifier: 4.13.16
+        version: 4.13.16
+      react:
+        specifier: 19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: 19.3.1
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.20.5
+        version: 22.20.5
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitejs/plugin-react':
+        specifier: 6.2.1
+        version: 6.2.1(vite@8.3.5(@types/node@22.20.5))
+      playwright:
+        specifier: ^1.64.1
+        version: 1.64.1
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 8.3.5
+        version: 8.3.5(@types/node@22.20.5)
+
   examples/hono-vite:
     dependencies:
       '@hono/node-server':
@@ -709,6 +749,22 @@ packages:
 
   '@vitest/spy@5.1.0':
     resolution: {integrity: sha512-2DPO5OMHWKrBngC+fCmTQqemNF0gidRhp3lxbBmRhW+M1XJrfgPpqNqWVevXtn2f2ufD5ZaR1B6B641aAlcX5A==}
+
+  '@ykurilov/authlite@file:.skill-check-hono/vendor/ykurilov-authlite-0.1.0.tgz':
+    resolution: {integrity: sha512-5tgpO/KFL9oae7K963xp4pZ2t36DEpPury0Dne4t66CtrhEUmJYakUnAAz1cxFCqGRuMeqrkmhj0gMVpxM9u6w==, tarball: file:.skill-check-hono/vendor/ykurilov-authlite-0.1.0.tgz}
+    version: 0.1.0
+    engines: {node: '>=22.13'}
+    peerDependencies:
+      hono: '>=4'
+      next: '>=15'
+      react: '>=18'
+    peerDependenciesMeta:
+      hono:
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
 
   assertion-error@2.0.1:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
@@ -1511,6 +1567,32 @@ snapshots:
       vite: 8.3.5(@types/node@22.20.5)
 
   '@vitest/spy@5.1.0': {}
+
+  '@ykurilov/authlite@file:.skill-check-hono/vendor/ykurilov-authlite-0.1.0.tgz(hono@4.13.16)(next@16.4.4(@playwright/test@1.64.1)(@types/node@22.20.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.1.0(@types/node@22.20.5)(vite@8.3.5(@types/node@22.20.5)))':
+    dependencies:
+      better-auth: 1.7.15(next@16.4.4(@playwright/test@1.64.1)(@types/node@22.20.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.1.0(@types/node@22.20.5)(vite@8.3.5(@types/node@22.20.5)))
+    optionalDependencies:
+      hono: 4.13.16
+      next: 16.4.4(@playwright/test@1.64.1)(@types/node@22.20.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      react: 19.3.1
+    transitivePeerDependencies:
+      - '@lynx-js/react'
+      - '@opentelemetry/api'
+      - '@prisma/client'
+      - '@sveltejs/kit'
+      - '@tanstack/react-start'
+      - '@tanstack/solid-start'
+      - drizzle-kit
+      - drizzle-orm
+      - mongodb
+      - mysql2
+      - pg
+      - prisma
+      - react-dom
+      - solid-js
+      - svelte
+      - vitest
+      - vue
 
   assertion-error@2.0.1: {}
 

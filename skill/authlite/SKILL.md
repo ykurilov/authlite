@@ -45,10 +45,10 @@ pnpm add "@ykurilov/authlite@git+https://<git-адрес-репозитория>
 | Переменная | Обязательна | Что это |
 |---|---|---|
 | `AUTHLITE_SECRET` | да | случайная строка ≥ 32 символов: `openssl rand -base64 32` |
-| `AUTHLITE_URL` | да | адрес, по которому открывают приложение, например `https://app.example.com` |
+| `AUTHLITE_URL` | да | адрес, по которому открывают приложение, например `https://app.example.com`; локально — с тем же портом, что в браузере |
 | `RESEND_API_KEY` | нет | ключ Resend; без него — режим разработки |
 | `AUTHLITE_EMAIL_FROM` | с ключом Resend | отправитель, например `Заметки <noreply@example.com>`; домен подтверждён в Resend |
-| `AUTHLITE_APP_NAME` | нет | название в письмах и на экранах, по умолчанию «Приложение» |
+| `AUTHLITE_APP_NAME` | нет | название в письмах, по умолчанию «Приложение»; на экранах название задаёт свойство `appName` — указать одинаково |
 | `AUTHLITE_DB_PATH` | нет | файл базы, по умолчанию `./data/authlite.sqlite` от папки запуска |
 
 Секреты — только в `.env` или окружении сервера, не в коде и не в git. В `.gitignore` приложения
@@ -138,14 +138,29 @@ app.get("/api/notes", requireUser(authLite), (c) => c.json({ owner: c.get("user"
 
 - разработка — один процесс: Node-сервер отдаёт `/api/*` в Hono через `getRequestListener(app.fetch)`
   из `@hono/node-server`, остальное — в Vite в `middlewareMode`;
-- рабочий режим — Hono отдаёт собранные `dist` через `serveStatic` и защищает страницы на сервере:
-  `app.get("/dashboard", requirePage(authLite), (c) => c.html(indexHtml))`.
+- рабочий режим — Hono отдаёт собранные `dist` и защищает страницы на сервере. Порядок маршрутов
+  важен: сначала API (`mountAuthLite` и свои `/api/*`), затем файлы, защищённые страницы, остальное:
+
+```ts
+import { readFileSync } from "node:fs";
+import { serve } from "@hono/node-server";
+import { serveStatic } from "@hono/node-server/serve-static";
+import { requirePage } from "@ykurilov/authlite/hono";
+
+const indexHtml = readFileSync("./dist/index.html", "utf8");
+app.use("/assets/*", serveStatic({ root: "./dist" }));
+app.get("/dashboard", requirePage(authLite), (c) => c.html(indexHtml)); // без входа — 302 на /login?next=
+app.get("*", (c) => c.html(indexHtml));
+serve({ fetch: app.fetch, port: Number(process.env.PORT ?? 3000) });
+```
 
 Вместо одного процесса годится и прокси Vite (`server.proxy: { "/api": "http://localhost:<порт Hono>" }`),
 тогда `AUTHLITE_URL` — адрес Vite.
 
 Клиент (React): экраны те же, что в Next.js, — показывать по адресам `/login`, `/signup`,
-`/forgot-password`, `/reset-password`. Стили: `import "@ykurilov/authlite/styles.css";`.
+`/forgot-password`, `/reset-password`. Стили: `import "@ykurilov/authlite/styles.css";`. Чтобы
+TypeScript принял импорт CSS, в проекте нужен `src/vite-env.d.ts` со строкой
+`/// <reference types="vite/client" />` (шаблон Vite его создаёт).
 Защита страницы в браузере:
 
 ```tsx
@@ -159,8 +174,17 @@ import { AuthGuard, useCurrentUser } from "@ykurilov/authlite/react";
 
 ## 5. Экраны и внешний вид
 
-Свойства экранов: `appName`, `logo` (React-элемент), адреса соседних экранов (`signUpHref`,
-`loginHref`, `forgotPasswordHref`), `defaultRedirect` — куда вести после входа без `?next=`.
+Свойства экранов (все необязательные; у всех есть `appName` и `logo` — React-элемент):
+
+| Экран | Свои свойства и значения по умолчанию |
+|---|---|
+| `LoginScreen` | `signUpHref="/signup"`, `forgotPasswordHref="/forgot-password"`, `defaultRedirect="/"` |
+| `SignUpScreen` | `loginHref="/login"`, `defaultRedirect="/"` |
+| `ForgotPasswordScreen` | `loginHref="/login"`, `resetPasswordPath="/reset-password"` |
+| `ResetPasswordScreen` | `loginHref="/login"`, `forgotPasswordHref="/forgot-password"` |
+| `SignOutButton` | `redirectTo="/login"`, текст кнопки — `children` (по умолчанию «Выйти») |
+
+`defaultRedirect` — куда вести после входа, если в адресе нет `?next=`.
 Адрес возврата `?next=` принимается только относительный, внутри приложения.
 
 Если экраны лежат не по стандартным адресам — передать `routes: { login, resetPassword }` в
@@ -227,4 +251,4 @@ proxy_set_header Host $host;
 | Письмо не пришло | без `RESEND_API_KEY` письма не уходят (смотреть журнал); с ключом — проверить домен отправителя в Resend и журнал на `Не удалось отправить письмо` |
 | `Cannot find module 'node:sqlite'` | Node.js старше 22.13 — обновить |
 | Next.js: `next/headers` вне запроса | `getCurrentUser`/`requireUser` из `nextAuth` — только в серверных компонентах, обработчиках и действиях |
-| Все попытки входа сразу 429 локально | без nginx у запросов нет адреса и счётчик общий; подождать минуту |
+| Локально в журнале `Rate limiting could not determine a client IP…`, а попытки входа быстро дают 429 | без nginx у запросов нет адреса, и счётчик общий на всех — для разработки это нормально; подождать минуту. На сервере исчезает после настройки nginx (п. 6) |
