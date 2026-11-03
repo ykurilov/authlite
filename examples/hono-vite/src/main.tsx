@@ -1,6 +1,6 @@
 import "@ykurilov/authlite/styles.css";
 import "./styles.css";
-import { LoginScreen, SignUpScreen } from "@ykurilov/authlite/react";
+import { ForgotPasswordScreen, LoginScreen, ResetPasswordScreen, SignUpScreen } from "@ykurilov/authlite/react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { DashboardPage } from "./dashboard-page.tsx";
@@ -12,6 +12,10 @@ function App() {
       return <LoginScreen appName="Заметки" defaultRedirect="/dashboard" />;
     case "/signup":
       return <SignUpScreen appName="Заметки" defaultRedirect="/dashboard" />;
+    case "/forgot-password":
+      return <ForgotPasswordScreen appName="Заметки" />;
+    case "/reset-password":
+      return <ResetPasswordScreen appName="Заметки" />;
     case "/dashboard":
       return <DashboardPage />;
     default:

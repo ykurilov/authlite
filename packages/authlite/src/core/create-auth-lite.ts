@@ -2,9 +2,15 @@ import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { getMigrations } from "better-auth/db/migration";
 import { openDatabase } from "./database.js";
+import { createConsoleSender } from "./email/console-sender.js";
+import type { EmailSender } from "./email/email-sender.js";
+import { createResendSender } from "./email/resend-sender.js";
+import { buildResetPasswordEmail } from "./email/reset-password-email.js";
+import { revokeOlderResetLinks } from "./reset-links.js";
 import { resolveSettings, type AuthLiteOptions, type AuthLiteSettings } from "./settings.js";
 
 const DAY_IN_SECONDS = 24 * 60 * 60;
+const RESET_LINK_LIFETIME_SECONDS = 60 * 60;
 
 /** Пути Better Auth, в теле которых приходит email пользователя. */
 const EMAIL_PATHS = new Set(["/sign-up/email", "/sign-in/email", "/request-password-reset"]);
@@ -96,19 +102,33 @@ function createBetterAuth(options: ReturnType<typeof buildBetterAuthOptions>) {
 }
 
 function buildBetterAuthOptions(settings: AuthLiteSettings) {
+  const database = openDatabase(settings.databasePath);
+  const emailSender = createEmailSender(settings);
   return {
     appName: settings.appName,
     secret: settings.secret,
     baseURL: settings.baseURL,
     basePath: "/api/auth",
     trustedOrigins: settings.trustedOrigins,
-    database: openDatabase(settings.databasePath),
+    database,
     telemetry: { enabled: false },
     emailAndPassword: {
       enabled: true,
       autoSignIn: true,
       minPasswordLength: 8,
       maxPasswordLength: 128,
+      resetPasswordTokenExpiresIn: RESET_LINK_LIFETIME_SECONDS,
+      revokeSessionsOnPasswordReset: true,
+      async sendResetPassword({ user, url, token }) {
+        revokeOlderResetLinks(database, user.id, token);
+        // Письмо уходит в фоне: ответ не ждёт почтовый сервис, не зависит от его сбоев
+        // и по времени не выдаёт, зарегистрирован ли адрес.
+        const message = buildResetPasswordEmail({ appName: settings.appName, to: user.email, url });
+        void emailSender.send(message).catch((error: unknown) => {
+          const reason = error instanceof Error ? error.message : String(error);
+          console.error(`[AuthLite] Не удалось отправить письмо сброса пароля на ${user.email}: ${reason}`);
+        });
+      },
     },
     session: {
       expiresIn: 30 * DAY_IN_SECONDS,
@@ -117,12 +137,26 @@ function buildBetterAuthOptions(settings: AuthLiteSettings) {
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
         if (!EMAIL_PATHS.has(ctx.path)) return;
-        const email = (ctx.body as { email?: unknown } | undefined)?.email;
-        if (typeof email !== "string") return;
-        return { context: { body: { ...ctx.body, email: normalizeEmail(email) } } };
+        const body = (ctx.body ?? {}) as { email?: unknown; redirectTo?: unknown };
+        if (typeof body.email !== "string") return;
+        const normalized: Record<string, unknown> = { ...body, email: normalizeEmail(body.email) };
+        // Без адреса возврата ссылка из письма вела бы в никуда — ведём на экран нового пароля.
+        if (ctx.path === "/request-password-reset" && !body.redirectTo) normalized.redirectTo = settings.routes.resetPassword;
+        return { context: { body: normalized } };
       }),
     },
   } satisfies BetterAuthOptions;
+}
+
+function createEmailSender(settings: AuthLiteSettings): EmailSender {
+  switch (settings.email.kind) {
+    case "custom":
+      return settings.email.sender;
+    case "resend":
+      return createResendSender({ apiKey: settings.email.apiKey, from: settings.email.from });
+    case "console":
+      return createConsoleSender();
+  }
 }
 
 /** Next.js загружает модуль несколько раз (разные части приложения) — предупреждаем один раз. */

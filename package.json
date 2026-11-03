@@ -7,7 +7,7 @@
   "scripts": {
     "build": "pnpm --filter @ykurilov/authlite build",
     "test": "pnpm --filter @ykurilov/authlite test",
-    "build:examples": "pnpm --filter ./examples/* build",
+    "build:examples": "pnpm --filter \"./examples/**\" build",
     "e2e": "playwright test"
   },
   "devDependencies": {
