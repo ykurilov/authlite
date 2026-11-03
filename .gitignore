@@ -19,3 +19,4 @@ playwright-report/
 .idea/
 .e2e-run/
 .skill-check/
+.skill-check-hono/
