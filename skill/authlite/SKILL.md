@@ -23,7 +23,10 @@ cd "<папка AuthLite>/packages/authlite" && pnpm install && pnpm pack --pack
 cd "<папка приложения>" && pnpm add /tmp/ykurilov-authlite-0.1.0.tgz
 ```
 
-Архив содержит собранный код (`dist`). После правок библиотеки повторить обе команды.
+Архив содержит собранный код (`dist`). Номер версии в имени архива — из `package.json` библиотеки;
+команда `pnpm pack` печатает точное имя. Если приложение будут собирать на другом компьютере или
+сервере — положить архив внутрь приложения (например `vendor/`) и ставить оттуда:
+`pnpm add ./vendor/ykurilov-authlite-<версия>.tgz`. После правок библиотеки повторить установку.
 
 **Из git** (когда репозиторий AuthLite выложен): пакет лежит в подпапке, сборка запускается сама
 скриптом `prepare`:
@@ -188,7 +191,23 @@ proxy_set_header Host $host;
 
 ## 7. Проверка
 
-1. Запустить без `AUTHLITE_SECRET` — процесс останавливается с подсказкой, что задать.
+Адреса API (все под `/api/auth`, JSON, для запросов не из браузера нужен заголовок
+`Origin: <AUTHLITE_URL>`):
+
+| Запрос | Тело |
+|---|---|
+| `POST /sign-up/email` | `{ email, password, name }` |
+| `POST /sign-in/email` | `{ email, password, rememberMe: true }` |
+| `POST /sign-out` | `{}` |
+| `GET /get-session` | — |
+| `POST /request-password-reset` | `{ email, redirectTo: "/reset-password" }` |
+| `POST /reset-password` | `{ token, newPassword }` |
+
+Ссылка из письма ведёт на `/api/auth/reset-password/<токен>?callbackURL=…`, а оттуда — на экран
+`/reset-password?token=…`, либо на `/reset-password?error=INVALID_TOKEN`, если ссылка устарела.
+
+1. Запустить без `AUTHLITE_SECRET` — процесс останавливается с подсказкой, что задать
+   (Next.js успевает напечатать «Ready», затем `startup()` завершает процесс с кодом 1).
 2. `/dashboard` без входа → `/login?next=%2Fdashboard`; `GET /api/notes` → 401.
 3. Регистрация → попадание на защищённую страницу, виден email.
 4. «Выйти» → защищённая страница снова закрыта; вход с теми же данными работает.
