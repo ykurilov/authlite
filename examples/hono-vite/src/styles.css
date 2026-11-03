@@ -4,6 +4,13 @@
   font-family: system-ui, sans-serif;
 }
 
+/* В тёмной теме акцент светлее, чтобы ссылки и кнопка читались на тёмном фоне. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --authlite-accent: #2dd4bf;
+  }
+}
+
 body {
   margin: 0;
   background: Canvas;
