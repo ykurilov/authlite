@@ -28,10 +28,10 @@ description: "Задачи реализации AuthLite v1"
 
 **Goal**: регистрация, вход, выход, сессия 30 дней. **Independent Test**: через `handler` зарегистрироваться, выйти, войти; cookie сессии постоянная (Max-Age ≈ 30 дней).
 
-- [ ] T010 [US1] Тесты в `packages/authlite/tests/sign-in-flow.test.ts`: регистрация → 200 и cookie; повторный email (в т.ч. `"  User@Example.COM "`) → отказ, запись не изменена; пароль 7 и 129 символов → отказ; вход верный → 200; неверный → 401; выход → сессия закрыта; Max-Age cookie 30 дней; таблицы созданы автоматически при первом запросе; телеметрия выключена в опциях
-- [ ] T011 [US1] Реализовать `packages/authlite/src/core/create-auth-lite.ts` (Better Auth: emailAndPassword 8–128, autoSignIn, session 30 дней/1 день, telemetry off, хук нормализации email, `ready()` с `getMigrations`) и `packages/authlite/src/index.ts`
-- [ ] T012 [P] [US1] Экраны `packages/authlite/src/react/{auth-api,form-fields,login-screen,sign-up-screen,sign-out-button}.tsx` и `packages/authlite/src/react/styles.css` (CSS-переменные, тёмная тема, телефон); проверка длины пароля и пустых полей до отправки; тексты из `contracts/http-endpoints.md`
-- [ ] T013 [P] [US1] Тест `packages/authlite/tests/react-helpers.test.ts`: `safeReturnPath` пропускает только относительные пути, `validatePassword`, нормализация email
+- [X] T010 [US1] Тесты в `packages/authlite/tests/sign-in-flow.test.ts`: регистрация → 200 и cookie; повторный email (в т.ч. `"  User@Example.COM "`) → отказ, запись не изменена; пароль 7 и 129 символов → отказ; вход верный → 200; неверный → 401; выход → сессия закрыта; Max-Age cookie 30 дней; таблицы созданы автоматически при первом запросе; телеметрия выключена в опциях
+- [X] T011 [US1] Реализовать `packages/authlite/src/core/create-auth-lite.ts` (Better Auth: emailAndPassword 8–128, autoSignIn, session 30 дней/1 день, telemetry off, хук нормализации email, `ready()` с `getMigrations`) и `packages/authlite/src/index.ts`
+- [X] T012 [P] [US1] Экраны `packages/authlite/src/react/{auth-api,form-fields,login-screen,sign-up-screen,sign-out-button}.tsx` и `packages/authlite/src/react/styles.css` (CSS-переменные, тёмная тема, телефон); проверка длины пароля и пустых полей до отправки; тексты из `contracts/http-endpoints.md`
+- [X] T013 [P] [US1] Тест `packages/authlite/tests/react-helpers.test.ts`: `safeReturnPath` пропускает только относительные пути, `validatePassword`, нормализация email
 
 ## Phase 4: User Story 2 — Защита страниц и данных (P1)
 
