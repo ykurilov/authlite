@@ -95,6 +95,6 @@ MVP — US1 + US2 (вход и защита в обоих примерах). З�
 
 ## Phase 9: Convergence
 
-- [ ] T035 Замерить память на Linux в контейнере с 1 процессором и 1 ГБ (`docker run --cpus=1 --memory=1g`, `examples/hono-vite/server/measure.ts`); если прирост памяти процесса больше 30 МБ — записать отклонение и его причину в `README.md` per SC-005 (partial)
-- [ ] T036 Замерить время регистрации и входа в том же контейнере (1 процессор, 1 ГБ) и записать в `README.md` per SC-004 (partial)
+- [X] T035 Замерить память на Linux в контейнере с 1 процессором и 1 ГБ (`docker run --cpus=1 --memory=1g`, `examples/hono-vite/server/measure.ts`); если прирост памяти процесса больше 30 МБ — записать отклонение и его причину в `README.md` per SC-005 (partial)
+- [X] T036 Замерить время регистрации и входа в том же контейнере (1 процессор, 1 ГБ) и записать в `README.md` per SC-004 (partial)
 - [ ] T037 Проверить скилл на чистом приложении Hono + Vite (вторая разновидность; Next.js проверяется в T029) per US4 Independent Test (partial)
