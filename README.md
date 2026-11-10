@@ -20,7 +20,7 @@
 ## Быстрый старт в своём приложении
 
 ```bash
-pnpm add "@ykurilov/authlite@git+https://github.com/ykurilov/authlite.git#path:packages/authlite"
+pnpm add https://github.com/ykurilov/authlite/releases/download/v0.1.0/ykurilov-authlite-0.1.0.tgz
 ```
 
 ```bash

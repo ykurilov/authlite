@@ -28,12 +28,14 @@ cd "<папка приложения>" && pnpm add /tmp/ykurilov-authlite-0.1.0.
 сервере — положить архив внутрь приложения (например `vendor/`) и ставить оттуда:
 `pnpm add ./vendor/ykurilov-authlite-<версия>.tgz`. После правок библиотеки повторить установку.
 
-**Из GitHub** (основной способ): пакет лежит в подпапке, сборка запускается сама
-скриптом `prepare`:
+**Из GitHub** (основной способ): готовый собранный архив из раздела Releases.
+Свежую версию смотреть на https://github.com/ykurilov/authlite/releases.
 
 ```bash
-pnpm add "@ykurilov/authlite@git+https://github.com/ykurilov/authlite.git#path:packages/authlite"
+pnpm add https://github.com/ykurilov/authlite/releases/download/v0.1.0/ykurilov-authlite-0.1.0.tgz
 ```
+
+Ставить из git-адреса репозитория не нужно: новые версии pnpm запрещают сборку таких пакетов.
 
 **Из npm** (когда пакет опубликован): `pnpm add @ykurilov/authlite`.
 
