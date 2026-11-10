@@ -6,11 +6,21 @@
 Готовые экраны на русском, светлая и тёмная тема, вид на телефоне.
 
 Подключают его агенты по скиллу [skill/authlite/SKILL.md](skill/authlite/SKILL.md).
+Демо: https://authlite.kurilov.cloud
+
+## Как подключить через агента
+
+Скажите своему агенту (Claude Code, Codex и т.п.) в папке приложения:
+
+> Подключи авторизацию AuthLite по инструкции https://github.com/ykurilov/authlite/blob/main/skill/authlite/SKILL.md
+
+Чтобы письма «забыли пароль» приходили на почту, агент проведёт вас по настройке Resend:
+[skill/authlite/resend-setup.md](skill/authlite/resend-setup.md). Это бесплатно, нужен только свой домен.
 
 ## Быстрый старт в своём приложении
 
 ```bash
-pnpm add @ykurilov/authlite        # способы установки (локально, git, npm) — в скилле
+pnpm add "@ykurilov/authlite@git+https://github.com/ykurilov/authlite.git#path:packages/authlite"
 ```
 
 ```bash

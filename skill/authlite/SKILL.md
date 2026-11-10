@@ -28,11 +28,11 @@ cd "<папка приложения>" && pnpm add /tmp/ykurilov-authlite-0.1.0.
 сервере — положить архив внутрь приложения (например `vendor/`) и ставить оттуда:
 `pnpm add ./vendor/ykurilov-authlite-<версия>.tgz`. После правок библиотеки повторить установку.
 
-**Из git** (когда репозиторий AuthLite выложен): пакет лежит в подпапке, сборка запускается сама
+**Из GitHub** (основной способ): пакет лежит в подпапке, сборка запускается сама
 скриптом `prepare`:
 
 ```bash
-pnpm add "@ykurilov/authlite@git+https://<git-адрес-репозитория>.git#path:packages/authlite"
+pnpm add "@ykurilov/authlite@git+https://github.com/ykurilov/authlite.git#path:packages/authlite"
 ```
 
 **Из npm** (когда пакет опубликован): `pnpm add @ykurilov/authlite`.
@@ -56,6 +56,9 @@ pnpm add "@ykurilov/authlite@git+https://<git-адрес-репозитория>
 
 Те же значения можно передать в `createAuthLite({ secret, baseURL, databasePath, appName, email: { from, sender } })`.
 `email.sender` — свой отправитель писем: объект с методом `send({ to, subject, html, text })`.
+
+Чтобы письма сброса уходили по-настоящему, пользователю нужны аккаунт Resend, свой домен и ключ.
+Провести его по шагам — по [resend-setup.md](resend-setup.md).
 
 ## 3. Next.js (App Router)
 
@@ -248,7 +251,7 @@ proxy_set_header Host $host;
 | `Нет права записи в файл базы …` | права на папку или `AUTHLITE_DB_PATH` в доступное место |
 | 403 `Invalid origin` на входе | `AUTHLITE_URL` не совпадает с адресом в браузере (порт, http/https); другие адреса — `trustedOrigins` |
 | Вход проходит, но страница снова просит войти | API и страницы на разных адресах — cookie не доходит; свести на один адрес (п. 4) |
-| Письмо не пришло | без `RESEND_API_KEY` письма не уходят (смотреть журнал); с ключом — проверить домен отправителя в Resend и журнал на `Не удалось отправить письмо` |
+| Письмо не пришло | без `RESEND_API_KEY` письма не уходят (смотреть журнал); с ключом — разбор в [resend-setup.md](resend-setup.md) |
 | `Cannot find module 'node:sqlite'` | Node.js старше 22.13 — обновить |
 | Next.js: `next/headers` вне запроса | `getCurrentUser`/`requireUser` из `nextAuth` — только в серверных компонентах, обработчиках и действиях |
 | Локально в журнале `Rate limiting could not determine a client IP…`, а попытки входа быстро дают 429 | без nginx у запросов нет адреса, и счётчик общий на всех — для разработки это нормально; подождать минуту. На сервере исчезает после настройки nginx (п. 6) |
